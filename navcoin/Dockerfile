@@ -72,68 +72,6 @@ RUN strip ${NAVCOIN_PREFIX}/bin/navcoind
 RUN strip ${NAVCOIN_PREFIX}/lib/libnavcoinconsensus.a
 RUN strip ${NAVCOIN_PREFIX}/lib/libnavcoinconsensus.so.0.0.0
 
-# Build stage for subchain.
-FROM alpine as navcoin-subchain
-
-COPY --from=navcoin-core /opt /opt
-
-RUN apk --no-cache add boost-dev
-RUN apk --no-cache add boost-thread
-RUN apk --no-cache add build-base
-RUN apk --no-cache add git
-RUN apk --no-cache add libexecinfo-dev
-RUN apk --no-cache add libressl
-RUN apk --no-cache add libressl-dev
-RUN apk --no-cache add zlib-dev
-
-RUN git clone https://github.com/NAVCoin/subchain.git
-
-WORKDIR /subchain/src
-
-ENV LIBRARY_PATH=/lib:/usr/lib
-
-RUN sed -i "35i-l execinfo \\\\" makefile.unix
-RUN sed -i s:"#include \"strlcpy.h\"":: irc.cpp
-RUN sed -i s:"#include \"strlcpy.h\"":: net.cpp
-RUN sed -i s:"#include \"strlcpy.h\"":: netbase.cpp
-RUN sed -i s:"#include \"strlcpy.h\"":: util.cpp
-RUN sed -i s:array:"boost\:\:array": net.cpp
-RUN sed -i s:sys/fcntl.h:fcntl.h: compat.h
-RUN sed -i s:sys/fcntl.h:fcntl.h: netbase.cpp
-RUN mkdir obj
-RUN make -f makefile.unix USE_UPNP=- \
-    BDB_INCLUDE_PATH=`ls -d /opt/db*/include/` \
-    BOOST_LIB_SUFFIX=-mt \
-    BDB_LIB_PATH=`ls -d /opt/db*`/lib/ \
-    -j4
-
-RUN strip navajoanonsubchaind
-RUN mkdir -p /opt/navcoin-subchain/bin
-RUN mv navajoanonsubchaind /opt/navcoin-subchain/bin
-
-# Build stage for Navtech.
-FROM alpine as navcoin-navtech
-
-COPY --from=navcoin-subchain /opt /opt
-
-RUN apk --no-cache add build-base
-RUN apk --no-cache add git
-RUN apk --no-cache add nodejs
-RUN apk --no-cache add nodejs-npm
-RUN apk --no-cache add python
-
-ENV NAVTECH_PREFIX=navtech
-
-RUN npm cache clean --force
-RUN npx npm@5.6 i -g npm@latest
-
-WORKDIR /opt
-RUN git clone https://github.com/navcoin/navtech.git ${NAVTECH_PREFIX}
-WORKDIR /opt/${NAVTECH_PREFIX}
-RUN rm -rf node_modules
-RUN npm install
-RUN mkdir keys keys/private keys/public
-
 # Build stage for completed artifacts.
 FROM alpine
 
@@ -144,26 +82,18 @@ RUN apk --no-cache add curl-dev
 RUN apk --no-cache add libevent
 RUN apk --no-cache add libressl
 RUN apk --no-cache add libzmq
-RUN apk --no-cache add nodejs
-RUN apk --no-cache add nodejs-npm
-RUN apk --no-cache add python
 RUN apk --no-cache add su-exec
 
-## Need to upgrade NPM again.
-RUN npx npm@5.6 i -g npm@latest
-
 ENV NAVCOIN_DATA=/home/navcoin/.navcoin4
-ENV SUBCHAIN_DATA=/home/navcoin/.navajoanonsubchain
 ENV NAVCOIN_VERSION=4.2.1
 ENV NAVCOIN_PREFIX=/opt/navcoin-${NAVCOIN_VERSION}
-ENV SUBCHAIN_PREFIX=/opt/navcoin-subchain
-ENV PATH=${NAVCOIN_PREFIX}/bin:${SUBCHAIN_PREFIX}/bin:$PATH
+ENV PATH=${NAVCOIN_PREFIX}/bin:$PATH
 
-COPY --from=navcoin-navtech /opt /opt
+COPY --from=navcoin-core /opt /opt
 COPY docker-entrypoint.sh /entrypoint.sh
 
-VOLUME ["/home/navcoin"]
+VOLUME ["/home/navcoin/.navcoin4"]
 
-EXPOSE 3000
+EXPOSE 44440 44444
 
 ENTRYPOINT ["/entrypoint.sh"]
