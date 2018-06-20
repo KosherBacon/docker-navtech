@@ -4,7 +4,7 @@ set -ex
 if [ $(echo "$1" | cut -c1) = "-" ]; then
   echo "$0: assuming arguments for navajoanonsubchaind"
 
-  set -- navcoind "$@"
+  set -- navajoanonsubchaind "$@"
 fi
 
 if [ $(echo "$1" | cut -c1) = "-" ] || [ "$1" = "navajoanonsubchaind" ]; then
