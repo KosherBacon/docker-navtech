@@ -111,18 +111,46 @@ RUN strip navajoanonsubchaind
 RUN mkdir -p /opt/navcoin-subchain/bin
 RUN mv navajoanonsubchaind /opt/navcoin-subchain/bin
 
+# Build stage for Navtech.
+FROM alpine as navcoin-navtech
+
+COPY --from=navcoin-subchain /opt /opt
+
+RUN apk --no-cache add build-base
+RUN apk --no-cache add git
+RUN apk --no-cache add nodejs
+RUN apk --no-cache add nodejs-npm
+RUN apk --no-cache add python
+
+ENV NAVTECH_PREFIX=navtech
+
+RUN npm cache clean --force
+RUN npx npm@5.6 i -g npm@latest
+
+WORKDIR /opt
+RUN git clone https://github.com/navcoin/navtech.git ${NAVTECH_PREFIX}
+WORKDIR /opt/${NAVTECH_PREFIX}
+RUN rm -rf node_modules
+RUN npm install
+RUN mkdir keys keys/private keys/public
+
 # Build stage for completed artifacts.
 FROM alpine
 
 RUN adduser -S navcoin
 RUN apk --no-cache add boost
 RUN apk --no-cache add boost-program_options
+RUN apk --no-cache add curl-dev
 RUN apk --no-cache add libevent
 RUN apk --no-cache add libressl
 RUN apk --no-cache add libzmq
 RUN apk --no-cache add nodejs
 RUN apk --no-cache add nodejs-npm
+RUN apk --no-cache add python
 RUN apk --no-cache add su-exec
+
+## Need to upgrade NPM again.
+RUN npx npm@5.6 i -g npm@latest
 
 ENV NAVCOIN_DATA=/home/navcoin/.navcoin4
 ENV SUBCHAIN_DATA=/home/navcoin/.navajoanonsubchain
@@ -131,10 +159,11 @@ ENV NAVCOIN_PREFIX=/opt/navcoin-${NAVCOIN_VERSION}
 ENV SUBCHAIN_PREFIX=/opt/navcoin-subchain
 ENV PATH=${NAVCOIN_PREFIX}/bin:${SUBCHAIN_PREFIX}/bin:$PATH
 
-COPY --from=navcoin-subchain /opt /opt
+COPY --from=navcoin-navtech /opt /opt
 COPY docker-entrypoint.sh /entrypoint.sh
 
-VOLUME ["/home/navcoin/.navcoin4"]
-VOLUME ["/home/navcoin/.navajoanonsubchain"]
+VOLUME ["/home/navcoin"]
+
+EXPOSE 3000
 
 ENTRYPOINT ["/entrypoint.sh"]
