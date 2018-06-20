@@ -97,3 +97,5 @@ VOLUME ["/home/navcoin/.navcoin4"]
 EXPOSE 44440 44444
 
 ENTRYPOINT ["/entrypoint.sh"]
+
+CMD ["navcoind"]
