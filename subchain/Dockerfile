@@ -68,6 +68,7 @@ RUN apk --no-cache add boost
 RUN apk --no-cache add boost-program_options
 RUN apk --no-cache add curl-dev
 RUN apk --no-cache add libevent
+RUN apk --no-cache add libexecinfo-dev
 RUN apk --no-cache add libressl
 RUN apk --no-cache add libzmq
 RUN apk --no-cache add su-exec
@@ -84,3 +85,5 @@ VOLUME ["/home/navcoin/.navajoanonsubchain"]
 EXPOSE 33330 33333
 
 ENTRYPOINT ["/entrypoint.sh"]
+
+CMD ["navajoanonsubchaind"]

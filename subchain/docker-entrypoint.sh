@@ -1,5 +1,5 @@
 #!/bin/sh
-set -ex
+set -e
 
 if [ $(echo "$1" | cut -c1) = "-" ]; then
   echo "$0: assuming arguments for navajoanonsubchaind"
@@ -17,7 +17,7 @@ if [ $(echo "$1" | cut -c1) = "-" ] || [ "$1" = "navajoanonsubchaind" ]; then
   set -- "$@" -datadir="$SUBCHAIN_DATA"
 fi
 
-if [ "$1" = "navajoanonsubchaind" ]]; then
+if [ "$1" = "navajoanonsubchaind" ]; then
   echo
   exec su-exec subchain "$@"
 fi
