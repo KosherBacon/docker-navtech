@@ -1,0 +1,46 @@
+version: "3.2"
+services:
+# Define incoming services.
+  core_i:
+    ports:
+      - "44444:44444"
+    networks:
+      - incoming
+
+  subchain_i:
+    ports:
+      - "33333:33333"
+    networks:
+      - incoming
+
+# Define outgoing services.
+  navtech_i:
+    ports:
+      - "3000:3000"
+    networks:
+      - incoming
+      - navtech
+
+  core_o:
+    ports:
+      - "44444:44444"
+    networks:
+      - outgoing
+
+  subchain_o:
+    ports:
+      - "33333:33333"
+    networks:
+      - outgoing
+
+  navtech_o:
+    ports:
+      - "3000:3000"
+    networks:
+      - outgoing
+      - navtech
+
+networks:
+  incoming:
+  outgoing:
+  navtech:
