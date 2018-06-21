@@ -22,6 +22,8 @@ RUN rm -rf node_modules
 RUN npm install
 RUN mkdir keys keys/private keys/public
 
+COPY docker-entrypoint.sh /entrypoint.sh
+
 EXPOSE 3000
 
 ENTRYPOINT ["/entrypoint.sh"]
