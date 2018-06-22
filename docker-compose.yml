@@ -1,61 +1,52 @@
-version: "2"
+version: "3.6"
 services:
 # Define incoming services.
   core_i:
     build: ./navcoin
-    ports:
-      - "44444:44444"
-    mac_address: 02:00:00:00:00:01
+    image: kosherbacon/docker-navtech:core
     networks:
-      - primary
+      - incoming
 
   subchain_i:
     build: ./subchain
-    ports:
-      - "33333:33333"
-    mac_address: 02:00:00:00:00:02
+    image: kosherbacon/docker-navtech:subchain
     networks:
-      - primary
+      - incoming
 
   navtech_i:
     build: ./navtech
-    ports:
-      - "3000:3000"
-    mac_address: 02:00:00:00:00:03
+    image: kosherbacon/docker-navtech:navtech
+    depends_on:
+      - core_i
+      - subchain_i
     networks:
-      - primary
+      - incoming
+      - navtech
 
 # Define outgoing services.
   core_o:
     build: ./navcoin
-    ports:
-      - "44444:44444"
-    mac_address: 02:00:00:00:01:01
+    image: kosherbacon/docker-navtech:core
     networks:
-      - primary
+      - outgoing
 
   subchain_o:
     build: ./subchain
-    ports:
-      - "33333:33333"
-    mac_address: 02:00:00:00:01:02
+    image: kosherbacon/docker-navtech:subchain
     networks:
-      - primary
+      - outgoing
 
   navtech_o:
     build: ./navtech
-    ports:
-      - "3000:3000"
-    mac_address: 02:00:00:00:01:03
+    image: kosherbacon/docker-navtech:navtech
+    depends_on:
+      - core_o
+      - subchain_o
     networks:
-      - primary
+      - navtech
+      - outgoing
 
 networks:
-  primary:
-    driver: macvlan
-    driver_opts:
-      parent: ens160
-    ipam:
-      driver: default
-      config:
-        - subnet: 192.168.86.0/24
+  incoming:
+  navtech:
+  outgoing:

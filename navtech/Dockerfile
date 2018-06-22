@@ -10,13 +10,14 @@ RUN apk --no-cache add python
 RUN apk --no-cache add su-exec
 
 ENV NAVTECH_PREFIX=navtech
+ENV NAVTECH_BRANCH=host-patch
 
 ## Need to update npm.
 RUN npm cache clean --force
 RUN npx npm@5.6 i -g npm@latest
 
 WORKDIR /opt
-RUN git clone https://github.com/navcoin/navtech.git ${NAVTECH_PREFIX}
+RUN git clone -b ${NAVTECH_BRANCH} https://github.com/navcoin/navtech.git ${NAVTECH_PREFIX}
 WORKDIR /opt/${NAVTECH_PREFIX}
 RUN rm -rf node_modules
 RUN npm install
