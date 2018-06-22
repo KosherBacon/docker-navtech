@@ -4,18 +4,24 @@ services:
   core_i:
     build: ./navcoin
     image: kosherbacon/docker-navtech:core
+    deploy:
+      replicas: 1
     networks:
       - incoming
 
   subchain_i:
     build: ./subchain
     image: kosherbacon/docker-navtech:subchain
+    deploy:
+      replicas: 1
     networks:
       - incoming
 
   navtech_i:
     build: ./navtech
     image: kosherbacon/docker-navtech:navtech
+    deploy:
+      replicas: 1
     depends_on:
       - core_i
       - subchain_i
@@ -27,18 +33,24 @@ services:
   core_o:
     build: ./navcoin
     image: kosherbacon/docker-navtech:core
+    deploy:
+      replicas: 1
     networks:
       - outgoing
 
   subchain_o:
     build: ./subchain
     image: kosherbacon/docker-navtech:subchain
+    deploy:
+      replicas: 1
     networks:
       - outgoing
 
   navtech_o:
     build: ./navtech
     image: kosherbacon/docker-navtech:navtech
+    deploy:
+      replicas: 1
     depends_on:
       - core_o
       - subchain_o
